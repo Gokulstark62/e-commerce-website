@@ -18,6 +18,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    default: "",
+  },
   new_price: {
     type: Number,
     required: true,
@@ -28,7 +32,7 @@ const productSchema = new mongoose.Schema({
   },
   date: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   available: {
     type: Boolean,

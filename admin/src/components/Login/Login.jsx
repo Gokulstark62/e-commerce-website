@@ -9,6 +9,7 @@ const Login = ()=>{
     const navigate = useNavigate();
     const {admin,setAdmin,token,setToken}=useContext(StoreContext);
     const backend_url = process.env.REACT_APP_API_URL;
+    const [submitting, setSubmitting] = useState(false);
     const [formData,setFormData]=useState({
         email:"",
         password:"",
@@ -18,36 +19,38 @@ const Login = ()=>{
     };
     const onLogin = async (e)=>{
         e.preventDefault();
-        const response = await fetch(`${backend_url}/api/users/login`,{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:JSON.stringify(formData),
-        });
-        const json = await response.json();
-        if(response.ok){
-            if(json.role==='admin'){
-                setToken(response.formData.token);
+        setSubmitting(true);
+        try {
+            const response = await fetch(`${backend_url}/api/users/admin/login`,{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify(formData),
+            });
+            const json = await response.json();
+            if(response.ok){
+                setToken(json.token);
                 setAdmin(true);
                 localStorage.setItem("token", json.token);
-                localStorage.setItem("admin", true);
+                localStorage.setItem("admin", "true");
                 toast.success("You're logged in.");
-                window.location.replace("/addproduct");
+                navigate("/addproduct");
             }
             else{
-                toast.error("Invalid Credentials");
+                toast.error(json.error || "Unable to log in.");
             }
-        }
-        else{
-            toast.error(json.error);
+        } catch (error) {
+            toast.error("Could not reach the server. Check that the backend is running.");
+        } finally {
+            setSubmitting(false);
         }
     };
     useEffect(()=>{
         if(admin && token){
            navigate("/addproduct");
         }
-    },[]);
+    },[admin, navigate, token]);
     return(
         <div className="login-popup">
             <form onSubmit={onLogin} className="login-popup-container">
@@ -70,7 +73,7 @@ const Login = ()=>{
                     required
                 />
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit" disabled={submitting}>{submitting ? "Signing in..." : "Login"}</button>
             </form>
         </div>
     );

@@ -11,48 +11,56 @@ const LoginSignup = () => {
         password:"",
     });
     
-    const backend_url = process.env.REACT_APP_API_URL;
+    const backend_url = process.env.REACT_APP_API_URL || 'http://localhost:4000';
     const login = async () =>{
-        const response = await fetch(`${backend_url}/api/users/login`,{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:JSON.stringify(formData),
-        });
-        const json = await response.json();
-        if(response.ok){
-            localStorage.setItem("token", json.token);
-            toast.success("You're logged in.");
-            window.location.replace("/");
-        }
-        else{
-            toast.error(json.error);
+        try {
+            const response = await fetch(`${backend_url}/api/users/login`,{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify(formData),
+            });
+            const json = await response.json();
+            if(response.ok){
+                localStorage.setItem("token", json.token);
+                toast.success("You're logged in.");
+                window.location.replace(continueTo());
+            }
+            else toast.error(json.error || 'Login failed.');
+        } catch (error) {
+            toast.error('Unable to connect to the server. Start the backend and try again.');
         }
     }
 
     const signup = async () =>{
-        const response = await fetch(`${backend_url}/api/users/signup`,{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:JSON.stringify(formData),
-        });
-        const json = await response.json();
-        if(response.ok){
-            localStorage.setItem('token',json.token);
-            toast.success("Account created.")
-            window.location.replace("/");
-        }
-        else{
-            toast.error(json.error);
+        try {
+            const response = await fetch(`${backend_url}/api/users/signup`,{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify(formData),
+            });
+            const json = await response.json();
+            if(response.ok){
+                localStorage.setItem('token',json.token);
+                toast.success("Account created.")
+                window.location.replace(continueTo());
+            }
+            else toast.error(json.error || 'Signup failed.');
+        } catch (error) {
+            toast.error('Unable to connect to the server. Start the backend and try again.');
         }
     }
 
     const changeHandler = (e)=>{
         setFormData({...formData,[e.target.name]:e.target.value});
     }
+    const continueTo = () => {
+        const redirect = new URLSearchParams(window.location.search).get("redirect");
+        return redirect && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/";
+    };
 
     return (
             <div className="loginsignup-container">

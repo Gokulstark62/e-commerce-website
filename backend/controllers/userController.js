@@ -9,6 +9,9 @@ exports.signupUser = async (req, res,next) => {
 
   // validation
   try {
+    if (!process.env.SECRET_KEY) {
+      return next(errorHandler(503, "SECRET_KEY is not configured on the server."));
+    }
     if (!name || !email || !password) {
       return next(
         errorHandler(400, "Name, email and password are required !!")
@@ -59,6 +62,9 @@ exports.signupUser = async (req, res,next) => {
 exports.loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   try {
+    if (!process.env.SECRET_KEY) {
+      return next(errorHandler(503, "SECRET_KEY is not configured on the server."));
+    }
     if (!email || !password) {
       return next(errorHandler(400, "Email and password required !!"));
     }

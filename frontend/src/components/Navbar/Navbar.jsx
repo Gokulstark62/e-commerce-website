@@ -1,56 +1,70 @@
-import React,{useContext, useRef, useState} from 'react';
-import './Navbar.css'
-import logo from '../../assets/logo.png'
-import cart_icon from '../../assets/cart_icon.png'
-import {Link, useNavigate} from 'react-router-dom';
-import { StoreContext } from '../../context/StoreContext';
-import hamburger from './../../assets/hamburger.png'
-import profile_icon from './../../assets/profile_icon.png'
+import React, { useContext, useState } from "react";
+import "./Navbar.css";
+import logo from "../../assets/logo.png";
+import cart_icon from "../../assets/cart_icon.png";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StoreContext } from "../../context/StoreContext";
+import hamburger from "../../assets/hamburger.png";
+import profile_icon from "../../assets/profile_icon.png";
 
 const Navbar = () => {
-    const [menu, setMenu] = useState("shop");
-    const {getTotalCartItems} = useContext(StoreContext);
-    const menuRef = useRef();
+  const { getTotalCartItems } = useContext(StoreContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(localStorage.getItem("token"));
 
-    const hamburger_toggle = (e) =>{
-        menuRef.current.classList.toggle('nav-menu-visible');
-    }
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+    window.location.reload();
+  };
 
-    const logout=()=>{
-        localStorage.removeItem('token');
-        window.location.replace('/');
-    }
+  const menuClass = (path) =>
+    location.pathname === path ? "nav-link nav-link-active" : "nav-link";
 
-    const navigate = useNavigate();
-
-    return ( 
-        <div className='navbar'>
-            <div className="nav-logo">
-                <img src={logo} alt="" />
-                <p>FashionFrenzy</p>
+  return (
+    <header className="navbar">
+      <Link to="/" className="nav-logo" aria-label="SS Stylo Fashion home">
+        <img src={logo} alt="" />
+        <span>SS Stylo <strong>Fashion</strong></span>
+      </Link>
+      <button
+        type="button"
+        className="nav-hamburger"
+        onClick={() => setMenuOpen((open) => !open)}
+        aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+        aria-expanded={menuOpen}
+      >
+        <img src={hamburger} alt="" />
+      </button>
+      <nav className={`nav-menu ${menuOpen ? "nav-menu-visible" : ""}`}>
+        <Link className={menuClass("/")} to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+        <Link className={menuClass("/men")} to="/men" onClick={() => setMenuOpen(false)}>Men</Link>
+        <Link className={menuClass("/women")} to="/women" onClick={() => setMenuOpen(false)}>Women</Link>
+        <Link className={menuClass("/kids")} to="/kids" onClick={() => setMenuOpen(false)}>Kids</Link>
+      </nav>
+      <div className="nav-actions">
+        {isLoggedIn ? (
+          <div className="navbar-profile">
+            <button type="button" className="profile-button" aria-label="Account menu">
+              <img src={profile_icon} alt="" />
+            </button>
+            <div className="nav-profile-dropdown">
+              <Link to="/myorders">My orders</Link>
+              <button type="button" onClick={logout}>Sign out</button>
             </div>
-            <img className="nav-hamburger" onClick={hamburger_toggle} src={hamburger} alt="" />
-            <ul ref={menuRef} className="nav-menu">
-                <li onClick={()=>setMenu("home")}><Link style={{textDecoration: 'none'}} to="/" className={menu==="home"?"active":""}>Home</Link></li>
-                <li onClick={()=>setMenu("men")}><Link style={{textDecoration: 'none'}} to="/men" className={menu==="men"?"active":""}>Men</Link></li>
-                <li onClick={()=>setMenu("women")}><Link style={{textDecoration: 'none'}} to="/women" className={menu==="women"?"active":""}>Women</Link></li>
-                <li onClick={()=>setMenu("kids")}><Link style={{textDecoration: 'none'}} to="/kids"className={menu==="kids"?"active":""}>Kids</Link></li>
-            </ul>
-            <div className="nav-login-cart">
-                {!localStorage.getItem('token')?<Link to="/login"><button>Login</button></Link>:
-                <div className='navbar-profile'>
-                    <img src={profile_icon} alt="" />
-                    <ul className="nav-profile-dropdown">
-                       <li onClick={()=>navigate("/myorders")}>Orders</li>
-                       <hr />
-                       <li onClick={logout}>Logout</li>
-                    </ul>
-                </div>}
-                <Link to="/cart"><img src={cart_icon} alt="" /></Link>
-                <div className="nav-cart-count">{getTotalCartItems()}</div>
-            </div>
-        </div>
-     );
-}
+          </div>
+        ) : (
+          <Link className="nav-signin" to="/login">Sign in</Link>
+        )}
+        <Link className="nav-cart-link" to="/cart" aria-label={`Shopping bag, ${getTotalCartItems()} items`}>
+          <img src={cart_icon} alt="" />
+          <span className="nav-cart-count">{getTotalCartItems()}</span>
+        </Link>
+      </div>
+    </header>
+  );
+};
 
 export default Navbar;

@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "Rose Ribbed Square-Neck Top",
+    "category": "women",
+    "description": "A soft ribbed top with a flattering square neckline, made for effortless everyday styling.",
+    "image": "/images/catalog/p1_product.png",
+    "new_price": 35,
+    "old_price": 55,
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Everyday Pink Essential Tee",
+    "category": "women",
+    "description": "Your new go-to tee: easy, comfortable, and ready to pair with anything.",
+    "image": "/images/catalog/p1_product_i1.png",
+    "new_price": 29,
+    "old_price": 45,
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Soft Knit Back Detail Top",
+    "category": "women",
+    "description": "A versatile knit staple with thoughtful detailing and a soft feel.",
+    "image": "/images/catalog/p1_product_i2.png",
+    "new_price": 42,
+    "old_price": 65,
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "City Style Sunglasses Tee",
+    "category": "women",
+    "description": "A relaxed graphic tee that brings a little personality to your everyday rotation.",
+    "image": "/images/catalog/p1_product_i3.png",
+    "new_price": 38,
+    "old_price": 60,
+    "available": true
+  },
+  {
+    "id": 5,
+    "name": "Modern Casual Co-ord Set",
+    "category": "women",
+    "description": "An easy-to-style matching set for a polished look with all-day comfort.",
+    "image": "/images/catalog/p1_product_i4.png",
+    "new_price": 59,
+    "old_price": 85,
+    "available": true
+  },
+  {
+    "id": 6,
+    "name": "Mint Puffer Jacket",
+    "category": "men",
+    "description": "A lightweight layer with a modern silhouette for cooler days and weekend plans.",
+    "image": "/images/catalog/hero_image.png",
+    "new_price": 79,
+    "old_price": 120,
+    "available": true
+  },
+  {
+    "id": 7,
+    "name": "Weekend Layered Jacket",
+    "category": "men",
+    "description": "A versatile outer layer that makes everyday outfits feel considered.",
+    "image": "/images/catalog/banner_mens.png",
+    "new_price": 89,
+    "old_price": 135,
+    "available": true
+  },
+  {
+    "id": 8,
+    "name": "Relaxed Streetwear Set",
+    "category": "men",
+    "description": "Comfort-first streetwear separates with a relaxed, easy fit.",
+    "image": "/images/catalog/hero_image.png",
+    "new_price": 65,
+    "old_price": 95,
+    "available": true
+  },
+  {
+    "id": 9,
+    "name": "Printed Hoodie for Kids",
+    "category": "kids",
+    "description": "A soft, playful hoodie made for busy days, playgrounds, and cozy evenings.",
+    "image": "/images/catalog/banner_kids.png",
+    "new_price": 32,
+    "old_price": 49,
+    "available": true
+  },
+  {
+    "id": 10,
+    "name": "Playday Graphic Hoodie",
+    "category": "kids",
+    "description": "An easy layer with a fun graphic and a comfortable everyday fit.",
+    "image": "/images/catalog/banner_kids.png",
+    "new_price": 35,
+    "old_price": 52,
+    "available": true
+  },
+  {
+    "id": 11,
+    "name": "Mini Weekend Outfit",
+    "category": "kids",
+    "description": "A versatile little outfit that's ready for weekend adventures.",
+    "image": "/images/catalog/banner_kids.png",
+    "new_price": 45,
+    "old_price": 68,
+    "available": true
+  },
+  {
+    "id": 12,
+    "name": "Summer Hat and Dress Look",
+    "category": "women",
+    "description": "An easy summer look with a light feel and a relaxed, sunny-day style.",
+    "image": "/images/catalog/banner_women.png",
+    "new_price": 54,
+    "old_price": 80,
+    "available": true
+  }
+]

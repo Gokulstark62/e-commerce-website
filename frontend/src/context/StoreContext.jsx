@@ -1,108 +1,177 @@
-import React, {createContext, useEffect, useState} from 'react';
-import {toast} from "react-toastify";
+import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import localProducts from "../assets/all_product";
 
 export const StoreContext = createContext(null);
 
-const StoreContextProvider = (props) => {
+const getSavedCart = () => {
+  try {
+    return JSON.parse(localStorage.getItem("cartItems") || "{}");
+  } catch (error) {
+    return {};
+  }
+};
 
-    const [all_product, setAll_product] = useState([]);
-    const [cartItems, setCartItems] = useState({});
-    const backend_url = process.env.REACT_APP_API_URL;
-    const token = localStorage.getItem('token');
+const StoreContextProvider = ({ children }) => {
+  const [all_product, setAll_product] = useState(localProducts);
+  const [cartItems, setCartItems] = useState(getSavedCart);
+  const [shippingFee, setShippingFee] = useState(0);
+  const backendUrl = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const [cartSynced, setCartSynced] = useState(() => !localStorage.getItem("token"));
 
-    useEffect(()=>{
-        const fetchData = async()=>{
-            const response = await fetch(`${backend_url}/api/products`);
-            const json = await response.json();
-            if(response.ok){
-                setAll_product(json);
-            }
-            else toast.error(json.error);
-            
-            if(localStorage.getItem('token')){
-                const response = await fetch(`${backend_url}/api/cart/getCart`,{
-                    method:'POST',
-                    headers:{
-                        'Content-Type':'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body:"",
-                });
-                const json = await response.json();
-                if(response.ok) setCartItems(json);
-                else toast.error(json.error);
-            }
-        };
-        fetchData();
-    },[])
-
-    const addToCart = async (itemId) =>{
-        if (!cartItems[itemId]) {
-            setCartItems((prev) => ({ ...prev, [itemId]: 1 }))
+  useEffect(() => {
+    let active = true;
+    const fetchProducts = async () => {
+      try {
+        const [productResponse, configResponse] = await Promise.all([
+          fetch(`${backendUrl}/api/products`),
+          fetch(`${backendUrl}/api/store/config`),
+        ]);
+        const [products, storeConfig] = await Promise.all([
+          productResponse.json(),
+          configResponse.json(),
+        ]);
+        if (productResponse.ok && active) setAll_product(products);
+        if (configResponse.ok && active && Number.isFinite(Number(storeConfig.shippingFee))) {
+          setShippingFee(Number(storeConfig.shippingFee));
         }
-        else {
-            setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }))
-        }
-        if(localStorage.getItem('token')){
-            const response = await fetch(`${backend_url}/api/cart/addToCart`,{
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body:JSON.stringify({'itemId':itemId}),
+      } catch (error) {
+        // Keep the included sample catalog available when the API is offline.
+      }
+    };
+
+    fetchProducts();
+    return () => {
+      active = false;
+    };
+  }, [backendUrl]);
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      if (cartSynced) localStorage.removeItem("cartItems");
+      return;
+    }
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems, cartSynced]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return undefined;
+    let active = true;
+    const fetchCart = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/api/cart/getCart`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        });
+        const cart = await response.json();
+        if (response.ok && active) {
+          const localCart = getSavedCart();
+          const mergedCart = { ...cart };
+          Object.entries(localCart).forEach(([itemId, quantity]) => {
+            mergedCart[itemId] = (Number(mergedCart[itemId]) || 0) + (Number(quantity) || 0);
+          });
+          if (Object.keys(localCart).length > 0) {
+            const syncResponse = await fetch(`${backendUrl}/api/cart/setCart`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ cartData: mergedCart }),
             });
-            const json = await response.json();
-            if(!response.ok){
-                toast.error(json.error);
+            const syncResult = await syncResponse.json();
+            if (!syncResponse.ok) {
+              toast.error(syncResult.error || "Unable to sync your local cart.");
+              return;
             }
+          }
+          setCartItems(mergedCart);
+          setCartSynced(true);
         }
+        else if (active) toast.error(cart.error || "Unable to load your saved cart.");
+      } catch (error) {
+        if (active) toast.error("Could not load your saved cart. Your local cart is still available.");
+      }
+    };
+    fetchCart();
+    return () => {
+      active = false;
+    };
+  }, [backendUrl]);
+
+  const updateRemoteCart = useCallback(async (itemId, endpoint) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const response = await fetch(`${backendUrl}/api/cart/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ itemId }),
+      });
+      const result = await response.json();
+      if (!response.ok) toast.error(result.error || "Unable to update your saved cart.");
+    } catch (error) {
+      toast.error("Could not sync your cart. Your changes may not be saved to your account.");
     }
+  }, [backendUrl]);
 
-    const removeFromCart = async (itemId) =>{
-        setCartItems((prev)=>({...prev,[itemId]:prev[itemId]-1}));
-        if(localStorage.getItem('token')){
-            const response = await fetch(`${backend_url}/api/cart/removeFromCart`,{
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body:JSON.stringify({'itemId':itemId}),
-            });
-            const json = await response.json();
-            if(!response.ok){
-                toast.error(json.error);
-            }
-        }
-    }
+  const addToCart = useCallback((itemId) => {
+    setCartItems((current) => ({
+      ...current,
+      [itemId]: (Number(current[itemId]) || 0) + 1,
+    }));
+    updateRemoteCart(itemId, "addToCart");
+  }, [updateRemoteCart]);
 
-    const getTotalCartAmount = () =>{
-        let totalAmount=0;
-        for (const item in cartItems){
-            if(cartItems[item]>0){
-                let itemInfo = all_product.find((product)=>product.id===Number(item));
-                totalAmount += itemInfo.new_price*cartItems[item];
-            }
-        }
-        return totalAmount;
-    }
+  const removeFromCart = useCallback((itemId) => {
+    setCartItems((current) => {
+      const next = { ...current };
+      const quantity = (Number(next[itemId]) || 0) - 1;
+      if (quantity > 0) next[itemId] = quantity;
+      else delete next[itemId];
+      return next;
+    });
+    updateRemoteCart(itemId, "removeFromCart");
+  }, [updateRemoteCart]);
 
-    const getTotalCartItems = () =>{
-        let totalItem=0;
-        for(const item in cartItems){
-            if(cartItems[item]>0) totalItem+=cartItems[item];
-        }
-        return totalItem;
-    }
+  const clearCart = useCallback(() => setCartItems({}), []);
 
-    const contextValue = {all_product,cartItems,addToCart,removeFromCart,getTotalCartAmount,getTotalCartItems};
+  const getTotalCartAmount = useCallback(() =>
+    Object.entries(cartItems).reduce((total, [itemId, quantity]) => {
+      const product = all_product.find((item) => Number(item.id) === Number(itemId));
+      return product && Number(quantity) > 0
+        ? total + Number(product.new_price) * Number(quantity)
+        : total;
+    }, 0), [all_product, cartItems]);
 
-    return (
-        <StoreContext.Provider value={contextValue}>
-            {props.children}
-        </StoreContext.Provider>
-    )
-}
+  const getTotalCartItems = useCallback(() =>
+    Object.values(cartItems).reduce((total, quantity) => total + Math.max(0, Number(quantity) || 0), 0),
+    [cartItems]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      all_product,
+      cartItems,
+      shippingFee,
+      addToCart,
+      removeFromCart,
+      clearCart,
+      getTotalCartAmount,
+      getTotalCartItems,
+    }),
+    [all_product, cartItems, shippingFee, addToCart, clearCart, getTotalCartAmount, getTotalCartItems, removeFromCart]
+  );
+
+  return <StoreContext.Provider value={contextValue}>{children}</StoreContext.Provider>;
+};
 
 export default StoreContextProvider;

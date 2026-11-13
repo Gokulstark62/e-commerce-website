@@ -1,35 +1,35 @@
-.navbar{
+.navbar {
+    position: sticky;
+    z-index: 10;
+    top: 0;
     display: flex;
+    height: 72px;
     align-items: center;
     justify-content: space-between;
-    padding: 15px 60px;
-    box-shadow: 0 1px 3px -2px;
-    margin-bottom: 1px;
-    background-color: #fff;
+    padding: 0 clamp(20px, 5vw, 64px);
+    border-bottom: 1px solid #e8ece8;
+    background: #fff;
 }
 
-.nav-logo{
-    width: 200px;
+.nav-logo {
+    margin: 0;
+    color: #20342a;
+    font: 800 17px 'Manrope', sans-serif;
 }
 
-.login-condition{
-    font-size: 15px;
-    border: 1px solid tomato;
-    padding: 5px 25px;
-    color: rgb(61, 57, 57);
-    border-radius: 16px;
-    cursor:pointer;
+.nav-logo span {
+    margin-left: 9px;
+    color: #77907d;
+    font: 700 10px 'DM Sans', sans-serif;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
 }
 
-.login-condition:hover{
-    background-color: rgb(243, 229, 226);
-}
+.nav-profile { width: 34px; height: 34px; border-radius: 50%; background: #eef3ee; object-fit: cover; }
+.login-condition { padding: 9px 16px; border: 1px solid #dfe6df; border-radius: 6px; color: #395743; cursor: pointer; font-size: 12px; font-weight: 700; }
+.login-condition:hover { border-color: #315d43; background: #f3f7f3; }
 
-@media(max-width:800px){
-    .navbar{
-        padding: 15px 30px;
-    }
-    .nav-logo{
-        width: 150px;
-    }
+@media (max-width: 800px) {
+    .navbar { height: 64px; padding: 0 18px; }
+    .nav-logo { font-size: 15px; }
 }
